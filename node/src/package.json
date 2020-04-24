@@ -1,0 +1,35 @@
+{
+  "name": "api_hub_rpr_v3x",
+  "version": "3.0.0",
+  "description": "Application Programming Interface Hub Request Persist Respond v3x",
+  "main": "ah_rpr_ws.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node --experimental-modules ah_rpr_ws.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hdr1001/api_hub_rpr_v3x.git"
+  },
+  "keywords": [
+    "Application",
+    "Programming",
+    "Interface",
+    "API",
+    "Hub",
+    "Request",
+    "Persist",
+    "Respond"
+  ],
+  "author": "Hans de Rooij",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/hdr1001/api_hub_rpr_v3x/issues"
+  },
+  "homepage": "https://github.com/hdr1001/api_hub_rpr_v3x#readme",
+  "dependencies": {
+    "express": "^4.17.1",
+    "xmldom": "^0.3.0"
+  }
+}
