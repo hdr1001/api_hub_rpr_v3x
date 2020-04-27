@@ -19,24 +19,23 @@
 // License.
 //
 // To run this code execute;
-//    node --experimental-modules ah_rpr_ws.js
+//    node ah_rpr_ws.js
 //
 // *********************************************************************
 'use strict';
 
-//Import of built-in Node.js modules
-import * as path from 'path';
+//Import API Hub modules
+const ahGlob = require('./ah_rpr_glob.js'); //Project globals
+const ahErr = require('./ah_rpr_err.js');   //Project error handling code
 
 //Use the express library for the web services infrastructure
-import express from 'express';
+const express = require('express');
 const appExpress = express();
 
-//Import API Hub modules
-import * as ahGlob from './ah_rpr_glob.js';
-import * as ahErr from './ah_rpr_err.js';
-/*
-const api = require('./ah_rpr_objs.js'); //Foundational objects
+//Import of built-in Node.js modules
+const path = require('path');
 
+/*
 //Settings body-parser, Node.js body parsing middleware
 //Documentation: https://github.com/expressjs/body-parser#body-parser
 //const bodyParser = require('body-parser');
@@ -51,7 +50,7 @@ const http_port = 8081;
 //Return JSON data in response to an HTTP request
 const doSend = (req, res, sStruct, sBody, err) => {
    let sContentType = 'application/' + sStruct.toLowerCase();
-   let httpStatus = ahErr.httpStatusOK;
+   let httpStatus = ahErr.httpStatusCodes.okay;
 
    if(err) {
       //Make sure the error is returned with the correct HTTP status code
@@ -84,7 +83,7 @@ appExpress.get('/hub', (req, res) => {
    };
 
    res.setHeader('Content-Type', 'application/json'); 
-   res.status(ahErr.httpStatusOK).send(JSON.stringify(ret, null, 3));
+   res.status(ahErr.httpStatusCodes.okay).send(JSON.stringify(ret, null, 3));
 });
 /*
 //Return a data product for a particular access key
@@ -94,8 +93,8 @@ appExpress.get('/hub/:sProduct/:sKey', (req, res) => {
    let oDataProd, sStruct = ahGlob.dataStruct[ahGlob.structJSON]; //JSON is default
 
    //Return XML if applicable
-   if(api.getDataStructure(req.params.sProduct) === ahGlob.dataStruct[ahGlob.structXML]) {
-      sStruct = ahGlob.dataStruct[ahGlob.structXML];
+   if(api.getDataStructure(req.params.sProduct) === dataStruct[idxDataStruct.xml]) {
+      sStruct = dataStruct[idxDataStruct.xml];
    }
 
    //Try to instantiate the data product object, errors might be thrown!
@@ -152,14 +151,14 @@ appExpress.post('/api/idr/:idrID', (req, res) => {
 */
 //Backstop for requests for nonexistent resources
 appExpress.use((req, res, next) => {
-   let sStruct = ahGlob.dataStruct[ahGlob.structJSON];
+   let sStruct = ahGlob.dataStruct[ahGlob.idxDataStruct.json];
 
    let msgInfo = 'The requested resource (' + req.path + ') can not be located';
    console.log(msgInfo);
 
-   let err = new ahErr.ApiHubErr(ahErr.unableToLocate,
-                                 ahGlob.dataStruct[ahGlob.structJSON],
-                                 msgInfo);
+   let err = new ahErr.ApiHubErr( ahErr.idxErrMsgs.unableToLocate,
+                                  ahGlob.dataStruct[ahGlob.idxDataStruct.json],
+                                  msgInfo);
 
    doSend(req, res, sStruct, null, err);
 });

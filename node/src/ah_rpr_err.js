@@ -22,32 +22,38 @@
 'use strict';
 
 //Include shared project code
-import * as ahGlob from './ah_rpr_glob.js'; 
+const ahGlob = require('./ah_rpr_glob.js'); //Project globals
 
-//Use xmldom package for SOAP APIs
-import XMLDOM from 'xmldom';
-const { DOMParser, XMLSerializer } = XMLDOM;
+//Libraries for SOAP APIs
+const domParser = require('xmldom').DOMParser;
+const domSerializer = require('xmldom').domSerializer;
 
 //HTTP status codes
-export const httpStatusOK = 200;
-export const httpStatusDfltErr = 500;
+const httpStatusCodes = {
+   okay: 200,
+   badRequest: 400,
+   notFound: 404,
+   genericErr: 500
+};
 
 //API Hub errors
 const ahErrMsgs = [
-   {shrtDesc: 'Error occurred in API HUB', httpStatus: 500},
-   {shrtDesc: 'Error instantiating DataProduct object', httpStatus: 400},
-   {shrtDesc: 'Ext API returned an invalid HTTP status', httpStatus: 500},
-   {shrtDesc: 'Unable to locate the requested resource', httpStatus: 404}
+   {shrtDesc: 'Error occurred in API HUB', httpStatus: httpStatusCodes.genericErr},
+   {shrtDesc: 'Error instantiating DataProduct object', httpStatus: httpStatusCodes.badRequest},
+   {shrtDesc: 'Ext API returned an invalid HTTP status', httpStatus: httpStatusCodes.genericErr},
+   {shrtDesc: 'Unable to locate the requested resource', httpStatus: httpStatusCodes.notFound}
 ];
 
 //Error type codes
-export const genericErr = 0;
-export const instantiateDataProduct = 1;
-export const httpStatusExtApi = 2;
-export const unableToLocate = 3;
+const idxErrMsgs = {
+   generic: 0,
+   instDataProduct: 1,
+   httpStatusExtApi: 2,
+   unableToLocate: 3
+};
 
 //API hub error constructor function
-export function ApiHubErr(errIdx, struct, msgInfo, extApiHttpStatus, extApiErrMsg) {
+function ApiHubErr(errIdx, struct, msgInfo, extApiHttpStatus, extApiErrMsg) {
    //Every API hub error odject must include an error number and
    //derived error message
    this.api_hub_err = {
@@ -69,12 +75,12 @@ export function ApiHubErr(errIdx, struct, msgInfo, extApiHttpStatus, extApiErrMs
       }
 
       if(extApiErrMsg) {
-         if(this.api_hub_err.err_struct === ahGlob.dataStruct[ahGlob.structXML]) {
+         if(this.api_hub_err.err_struct === ahGlob.dataStruct[ahGlob.idxDataStruct.xml]) {
             //External API error is unparsed XML
             let oXML = null;
 
             try {
-               oXML = new DOMParser().parseFromString(extApiErrMsg, 'text/xml');
+               oXML = new domParser().parseFromString(extApiErrMsg, 'text/xml');
             }
             catch(err) {
                console.log(err);
@@ -96,7 +102,7 @@ export function ApiHubErr(errIdx, struct, msgInfo, extApiHttpStatus, extApiErrMs
 
 ApiHubErr.prototype.toString = function() {
    if(this.api_hub_err && this.api_hub_err.err_struct && 
-         this.api_hub_err.err_struct === ahGlob.dataStruct[ahGlob.structXML]) {
+         this.api_hub_err.err_struct === ahGlob.dataStruct[ahGlob.idxDataStruct.xml]) {
 
       let sXML = '<api_hub_err>';
       sXML += '<message>' + this.api_hub_err.message + '</message>';
@@ -113,7 +119,7 @@ ApiHubErr.prototype.toString = function() {
          }
 
          if(this.api_hub_err.ext_api.err_msg) {
-            let sMsg = new XMLSerializer().serializeToString(this.api_hub_err.ext_api.err_msg);
+            let sMsg = new domSerializer().serializeToString(this.api_hub_err.ext_api.err_msg);
 
             sXML += '<err_msg>' + sMsg + '</err_msg>';
          }
@@ -132,7 +138,7 @@ ApiHubErr.prototype.toString = function() {
 }
 
 //Get the HTTP status error code from an API hub error object
-export const getHttpStatusCode = err => {
+const getHttpStatusCode = err => {
    //If available an external API status code takes precedence
    try {
       if(err.api_hub_err.ext_api.http_status) {
@@ -155,5 +161,18 @@ export const getHttpStatusCode = err => {
    }
 
    //Just return the default error code
-   return module.exports.httpStatusDfltErr; //500, internal server error
+   return httpStatusCodes.genericErr; //500, internal server error
 };
+
+module.exports = Object.freeze({
+   //HTTP status codes
+   httpStatusCodes,
+
+   //Error messages
+   ahErrMsgs,
+   idxErrMsgs,
+
+   //Error handling functions
+   ApiHubErr, //Error constructor function
+   getHttpStatusCode
+});

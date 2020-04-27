@@ -3,10 +3,9 @@
   "version": "3.0.0",
   "description": "Application Programming Interface Hub Request Persist Respond v3x",
   "main": "ah_rpr_ws.js",
-  "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node --experimental-modules ah_rpr_ws.js"
+    "start": "node ah_rpr_ws.js"
   },
   "repository": {
     "type": "git",
@@ -30,6 +29,7 @@
   "homepage": "https://github.com/hdr1001/api_hub_rpr_v3x#readme",
   "dependencies": {
     "express": "^4.17.1",
+    "pg": "^8.0.3",
     "xmldom": "^0.3.0"
   }
 }
