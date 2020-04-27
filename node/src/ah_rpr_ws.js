@@ -25,8 +25,9 @@
 'use strict';
 
 //Import API Hub modules
-const ahGlob = require('./ah_rpr_glob.js'); //Project globals
-const ahErr = require('./ah_rpr_err.js');   //Project error handling code
+const ahGlob = require('./ah_rpr_glob.js');        //Project globals
+const ahErr = require('./ah_rpr_err.js');          //Project error handling code
+const ahObjProd = require('./ah_rpr_obj_prod.js'); //Data product objects
 
 //Use the express library for the web services infrastructure
 const express = require('express');
@@ -85,21 +86,21 @@ appExpress.get('/hub', (req, res) => {
    res.setHeader('Content-Type', 'application/json'); 
    res.status(ahErr.httpStatusCodes.okay).send(JSON.stringify(ret, null, 3));
 });
-/*
+
 //Return a data product for a particular access key
 appExpress.get('/hub/:sProduct/:sKey', (req, res) => {
    //console.log('Product requested: ' + req.params.sProduct);
 
-   let oDataProd, sStruct = ahGlob.dataStruct[ahGlob.structJSON]; //JSON is default
+   let oDataProd, sStruct = ahGlob.dataStruct[ahGlob.idxDataStruct.json]; //JSON is default
 
    //Return XML if applicable
-   if(api.getDataStructure(req.params.sProduct) === dataStruct[idxDataStruct.xml]) {
-      sStruct = dataStruct[idxDataStruct.xml];
+   if(ahGlob.getDataStruct(req.params.sProduct) === ahGlob.dataStruct[ahGlob.idxDataStruct.xml]) {
+      sStruct = ahGlob.dataStruct[ahGlob.idxDataStruct.xml];
    }
 
    //Try to instantiate the data product object, errors might be thrown!
    try {
-      oDataProd = api.getDataProduct(req.params.sKey, req.params.sProduct, req.query.forceNew);
+      oDataProd = ahObjProd.getDataProduct(req.params.sKey, req.params.sProduct, req.query.forceNew);
    }
    catch(err) { //Error thrown while constructing data product object
       doSend(req, res, sStruct, null, err);
@@ -113,7 +114,7 @@ appExpress.get('/hub/:sProduct/:sKey', (req, res) => {
 
    oDataProd.on('onError', err => doSend(req, res, sStruct, null, err));
 });
-
+/*
 //Return a Direct+ identity resolution response (note post!)
 appExpress.post('/api/idr', (req, res) => {
    const oIDR = api.getIDR(req.body);

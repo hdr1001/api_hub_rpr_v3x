@@ -238,14 +238,14 @@ class AuthToken extends ahGlobObj.EvntEmit {
    }
 }
 
-// Global variables holding the authorization tokens
-let dplAuthToken = null;
-let d2oAuthToken = null;
+setTimeout(() => {
+      ahGlobObj.dplAuthToken = new AuthToken(ahGlob.apis[ahGlob.idxApis.apiDpl].id)
+   },
+   2500
+);
 
-setTimeout(() => {dplAuthToken = new AuthToken(ahGlob.apis[ahGlob.idxApis.apiDpl].id)}, 2500);
-setTimeout(() => {d2oAuthToken = new AuthToken(ahGlob.apis[ahGlob.idxApis.apiD2o].id)}, 3000);
-
-module.exports = Object.freeze({
-   dplAuthToken,
-   d2oAuthToken
-});
+setTimeout(() => {
+      ahGlobObj.d2oAuthToken = new AuthToken(ahGlob.apis[ahGlob.idxApis.apiD2o].id)
+   },
+   3000
+);

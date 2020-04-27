@@ -24,10 +24,6 @@
 //Include shared project code
 const ahGlob = require('./ah_rpr_glob.js'); //Project globals
 
-//Libraries for SOAP APIs
-const domParser = require('xmldom').DOMParser;
-const domSerializer = require('xmldom').domSerializer;
-
 //HTTP status codes
 const httpStatusCodes = {
    okay: 200,
@@ -80,7 +76,7 @@ function ApiHubErr(errIdx, struct, msgInfo, extApiHttpStatus, extApiErrMsg) {
             let oXML = null;
 
             try {
-               oXML = new domParser().parseFromString(extApiErrMsg, 'text/xml');
+               oXML = ahGlob.domParser.parseFromString(extApiErrMsg, 'text/xml');
             }
             catch(err) {
                console.log(err);
@@ -119,7 +115,7 @@ ApiHubErr.prototype.toString = function() {
          }
 
          if(this.api_hub_err.ext_api.err_msg) {
-            let sMsg = new domSerializer().serializeToString(this.api_hub_err.ext_api.err_msg);
+            let sMsg = ahGlob.xmlSerializer.serializeToString(this.api_hub_err.ext_api.err_msg);
 
             sXML += '<err_msg>' + sMsg + '</err_msg>';
          }

@@ -21,6 +21,10 @@
 // *********************************************************************
 'use strict';
 
+//Libraries for SOAP APIs
+const DOMParser = require('xmldom').DOMParser;
+const XMLSerializer = require('xmldom').XMLSerializer;
+
 //Structure of the data delivered
 const dataStruct = ['XML', 'JSON'];
 
@@ -131,7 +135,34 @@ const idxProducts = {
    lei_ref: 7
 };
 
+//Return data structure of a product
+const getDataStruct = sProduct => {
+   let sDataStruct = dataStruct[idxDataStruct.json]; //Default
+
+   let oProduct = getProduct(sProduct);
+
+   if(oProduct) {
+      sDataStruct = oProduct.api.struct;
+   }
+
+   return sDataStruct;
+};
+
+//Return an API object based on an ID like 'dpl', 'd2o', etc.
+const getAPI = sAPI => { 
+   return apis.find(oAPI => oAPI.id === sAPI); 
+};
+
+//Return a product object based on an ID like 'cmpelk', 'cmptcs', etc.
+const getProduct = sProduct => {
+   return products.find(oProd => oProd.prodID === sProduct);
+};
+
 module.exports = Object.freeze({
+   //SOAP libraries
+   domParser: new DOMParser(),
+   xmlSerializer: new XMLSerializer(),
+      
    //Structure of the data delivered
    dataStruct,
    idxDataStruct,
@@ -150,5 +181,10 @@ module.exports = Object.freeze({
 
    //Supported data products
    products,
-   idxProducts
+   idxProducts,
+
+   //Utility functions on global constucts
+   getDataStruct,
+   getAPI,
+   getProduct
 });

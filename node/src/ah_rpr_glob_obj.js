@@ -30,6 +30,7 @@ const EvntEmit = require('events');
 
 //HTTP libraries
 const https = require('https');
+const qryStr = require('querystring');
 
 //Event in constructor workaround, more visit https://goo.gl/KO547I
 const emitConstructorEvnt = (instanceThis, sEvnt, err) => {
@@ -159,14 +160,14 @@ const apiParams = {
             };
 
             switch(this._product.prodID) {
-               case products[cmptcs].prodID:
+               case ahGlob.products[ahGlob.idxProducts.cmptcs].prodID:
                   oQryStr.tradeUp = 'hq';
                   oQryStr.orderReason = 6332;
                   break;
-               case products[cmpcvf].prodID:
+               case ahGlob.products[ahGlob.idxProducts.cmpcvf].prodID:
                   oQryStr.tradeUp = 'hq';
                   break;
-               case products[cmpbos].prodID:
+               case ahGlob.products[ahGlob.idxProducts.cmpbos].prodID:
                   ret.path = '/v1/beneficialowner';
                   oQryStr.duns = this._sKey;
                   oQryStr.ownershipType = 'BENF_OWRP';
@@ -177,11 +178,11 @@ const apiParams = {
                   console.log('No additional query parameters');
             }
 
-            if(this._product.prodID !== products[cmpbos].prodID) {
+            if(this._product.prodID !== ahGlob.products[ahGlob.idxProducts.cmpbos].prodID) {
                ret.path += '/' + this._sKey;
             }
             ret.path += '?' + qryStr.stringify(oQryStr);
-            ret.headers.Authorization = dplAuthToken.toString();
+            ret.headers.Authorization = '' + module.exports.dplAuthToken;
 
             return ret;
          }
@@ -237,12 +238,12 @@ const apiParams = {
                OrderReasonCode: '6332'
             };
 
-            if(this._product.prodID === products[cmp_bos_d2o].prodID) {
+            if(this._product.prodID === ahGlob.products[ahGlob.idxProducts.cmp_bos_d2o].prodID) {
                oQryStr.OwnershipPercentage = '25';
             }
 
             ret.path += '?' + qryStr.stringify(oQryStr);
-            ret.headers.Authorization = d2oAuthToken.toString();
+            ret.headers.Authorization = '' + module.exports.d2oAuthToken;
 
             return ret;
          }
@@ -371,20 +372,20 @@ function execHttpReqResp() {
                let msgInfo = 'API call returned an HTTP status code outside the 2XX range (code: ' + resp.statusCode + ').';
                console.log(msgInfo);
 
-               let sStruct = ahGlob.dataStruct[ahGlob.structJSON];
+               let sStruct = ahGlob.dataStruct[ahGlob.idxDataStruct.json];
 
-               if(this._product && this._product.api.struct === ahGlob.dataStruct[ahGlob.structXML]) {
+               if(this._product && this._product.api.struct === ahGlob.dataStruct[ahGlob.idxDataStruct.xml]) {
                   //Please note that in SOAP APIs errors are usually communicated in the HTTP
                   //response body. It is therefore unlikely to end up in this particular branch
                   //of code but it is possible (most likely involving an HTTP status code 500).
                   sStruct = this._product.api.struct;
                }
 
-               reject(new ahErr.ApiHubErr( ahErr.httpStatusExtApi,   //Error type code
-                                           sStruct,                  //The structure in which the error should be passed back
-                                           msgInfo,                  //Specific information concerning the error
-                                           resp.statusCode,          //HTTP status code 
-                                           respBody));               //String (JSON or XML) containing external API error
+               reject(new ahErr.ApiHubErr( ahErr.idxErrMsgs.unableToLocate, //Error type code
+                                           sStruct,           //The structure in which the error should be passed back
+                                           msgInfo,           //Specific information concerning the error
+                                           resp.statusCode,   //HTTP status code 
+                                           respBody));        //String (JSON or XML) containing external API error
                return;
             }
 
@@ -405,33 +406,11 @@ function execHttpReqResp() {
    });
 }
 
-//Return an API object based on an ID like 'dpl', 'd2o', etc.
-const getAPI = sAPI => { 
-   return ahGlob.apis.find(oAPI => oAPI.id === sAPI); 
-};
-
-//Return a product object based on an ID like 'cmpelk', 'cmptcs', etc.
-const getProduct = sProduct => {
-   return ahGlob.products.find(oProd => oProd.prodID === sProduct);
-};
-
-//Return data structure of a product
-const getDataStruct = sProduct => {
-   let sDataStruct = ahGlob.dataStruct[ahGlob.idxDataStruct.json]; //Default
-
-   let oProduct = getProduct(sProduct);
-
-   if(oProduct) {
-      sDataStruct = oProduct.api.struct;
-   }
-
-   return sDataStruct;
-};
-
-const iniApi = sAPI => { //Return the API object based on the ID provided
+//Return the API object based on the ID provided
+const iniApi = sAPI => {
    sAPI = sAPI || ahGlob.apis[ahGlob.idxApis.apiDpl].id; //Default provided
 
-   let oAPI = getAPI(sAPI);
+   let oAPI = ahGlob.getAPI(sAPI);
 
    if(oAPI) {
       return oAPI;
@@ -440,16 +419,17 @@ const iniApi = sAPI => { //Return the API object based on the ID provided
       let msgInfo = 'API specified (' + sAPI + ') is not supported';
       console.log(msgInfo);
 
-      throw new ahErr.ApiHubErr( ahErr.ahErrMsgs[ahErr.idxErrMsgs.instDataProduct],
+      throw new ahErr.ApiHubErr( ahErr.idxErrMsgs.instDataProduct,
                                  ahGlob.dataStruct[ahGlob.idxDataStruct.json],
                                  msgInfo );
    }
 };
 
+//Identify the correct product key in the global products array
 const iniProd = sProductID => {
    sProductID = sProductID || ahGlob.products[ahGlob.idxProducts.cmpelk].prodID; //Default provided
 
-   let oProduct = getProduct(sProductID);
+   let oProduct = ahGlob.getProduct(sProductID);
 
    if(oProduct) {
       return oProduct;
@@ -458,13 +438,13 @@ const iniProd = sProductID => {
       let msgInfo = 'Product identifier specified (' + sProductID + ') is not supported';
       console.log(msgInfo);
 
-      throw new ahErr.ApiHubErr( ahErr.ahErrMsgs[ahErr.idxErrMsgs.instDataProduct],
+      throw new ahErr.ApiHubErr( ahErr.idxErrMsgs.instDataProduct,
                                  ahGlob.dataStruct[ahGlob.idxDataStruct.json],
                                  msgInfo );
    }
 };
 
-module.exports = Object.freeze({
+module.exports = {
    //The API Hub objects are event emitters so ...
    EvntEmit,
    emitConstructorEvnt,
@@ -475,16 +455,16 @@ module.exports = Object.freeze({
    //All object SQL statements
    sqlPrepStmts,
 
-   //All API HTTP parameters
-   apiParams,
-
    //Http call
    execHttpReqResp,
 
    //Generic functions
-   getAPI,
-   getProduct,
-   getDataStruct,
    iniApi,
-   iniProd
-});
+   iniProd,
+
+   //Authorization tokens
+   dplAuthToken: null,
+   d2oAuthToken: null
+};
+
+const ahObjAuth = require('./ah_rpr_obj_auth.js'); //Authorization token object code
