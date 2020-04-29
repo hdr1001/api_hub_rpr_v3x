@@ -131,7 +131,7 @@ const apiParams = {
             };
 
             let dpl_credentials = require('./creds/dpl.json');
-            let buff = new Buffer(dpl_credentials.usrID + ':' + dpl_credentials.pwd);
+            let buff = Buffer.from(dpl_credentials.usrID + ':' + dpl_credentials.pwd);
             let b64 = buff.toString('Base64');
             ret.headers.Authorization += b64;
 

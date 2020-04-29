@@ -117,7 +117,7 @@ CREATE TABLE public.auth_tokens
 (
     id integer NOT NULL DEFAULT nextval('auth_tokens_id_seq'::regclass),
     api char(3),
-    token character varying(128) COLLATE pg_catalog."default",
+    token character varying(2048) COLLATE pg_catalog."default",
     expires_in bigint,
     obtained_at bigint,
     CONSTRAINT auth_tokens_pkey PRIMARY KEY (id)
