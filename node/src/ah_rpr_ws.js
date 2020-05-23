@@ -28,6 +28,7 @@
 const ahGlob = require('./ah_rpr_glob.js');        //Project globals
 const ahErr = require('./ah_rpr_err.js');          //Project error handling code
 const ahObjProd = require('./ah_rpr_obj_prod.js'); //Data product objects
+const ahObjIdr = require('./ah_rpr_obj_idr.js');   //D&B IDentity Resolution
 
 //Use the express library for the web services infrastructure
 const express = require('express');
@@ -36,13 +37,11 @@ const appExpress = express();
 //Import of built-in Node.js modules
 const path = require('path');
 
-/*
 //Settings body-parser, Node.js body parsing middleware
 //Documentation: https://github.com/expressjs/body-parser#body-parser
-//const bodyParser = require('body-parser');
-//appExpress.use(bodyParser.urlencoded({extended: true}));
-//appExpress.use(bodyParser.json()); 
-*/
+const bodyParser = require('body-parser');
+appExpress.use(bodyParser.urlencoded({extended: true}));
+appExpress.use(bodyParser.json()); 
 
 //HTTP host server and port
 const http_host = '0.0.0.0';
@@ -114,27 +113,36 @@ appExpress.get('/hub/:sProduct/:sKey', (req, res) => {
 
    oDataProd.on('onError', err => doSend(req, res, sStruct, null, err));
 });
-/*
-//Return a Direct+ identity resolution response (note post!)
-appExpress.post('/api/idr', (req, res) => {
-   const oIDR = api.getIDR(req.body);
 
-   res.setHeader('Content-Type', 'application/json');
+//Return a D&B Direct+ IDentity Resolution response (note post!)
+appExpress.post('/hub/idr', (req, res) => {
+   let oIdr, sStruct = ahGlob.dataStruct[ahGlob.idxDataStruct.json];
 
-   oIDR.on('onLoad', () => {
-      res.setHeader('X-DNB-DPL-IDR-ID', oIDR.ID);
-      res.setHeader('X-DNB-DPL-HTTP-Stat', oIDR.dplHttpStatus);
-      res.send(oIDR.rsltJSON);
+   //Try to instantiate a D+ IDR object, errors might be thrown!
+   try {
+      oIdr = ahObjIdr.getDnbDplIdr(req.body);
+   }
+   catch(err) { //Error thrown
+      doSend(req, res, sStruct, null, err);
+      return;
+   }
+
+   //The Direct+ HTTP status code returned can be of interest
+
+   oIdr.on('onLoad', () => { //Match candidates available
+      res.setHeader('X-DNB-DPL-IDR-ID', oIdr.Id);
+      res.setHeader('X-DNB-DPL-HTTP-Stat', oIdr.dplHttpStatus);
+      doSend(req, res, sStruct, oIdr.rsltJSON);
    });
 
-   oIDR.on('onError', () => {
-      res.setHeader('X-DNB-DPL-HTTP-Stat', oIDR.dplHttpStatus);
-      res.send(oIDR.rsltJSON);
+   oIdr.on('onError', err => {
+      res.setHeader('X-DNB-DPL-HTTP-Stat', oIdr.dplHttpStatus);
+      doSend(req, res, sStruct, null, err);
    });
 });
-
+/*
 //Associate a specific DUNS with a Direct+ IDR transaction
-appExpress.post('/api/idr/:idrID', (req, res) => {
+appExpress.post('/hub/idr/:idrID', (req, res) => {
    const updIdrDuns = api.doUpdIdrDuns(req.params.idrID, req.body.DUNS);
 
    res.setHeader('Content-Type', 'application/json');

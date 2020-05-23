@@ -111,6 +111,30 @@ const sqlPrepStmts = {
          text: sSQL,
          values: [this._sKey]
       };
+   },
+
+   insDnbDplIdrParams: function() {
+      let sSQL = 'INSERT INTO match_dnb_idr (parameters) VALUES ($1) RETURNING id;';
+      //console.log('SQL ins_DnbDplIdrParams -> ' + sSQL);
+
+      return {
+         name: 'ins_DnbDplIdrParams',
+         text: sSQL,
+         values: [this._params]
+      };
+   },
+
+   updDnbDplIdrResults: function() {
+      let sSQL = 'UPDATE match_dnb_idr ';
+      sSQL += 'SET result = $1, http_stat = $2, obtained_at = $3 ';
+      sSQL += 'WHERE id = $4;';
+      //console.log('SQL upd_DnbDplIdrResults -> ' + sSQL);
+
+      return {
+         name: 'upd_DnbDplIdrResults',
+         text: sSQL,
+         values: [this._rawRsltIdr, this._dplHttpStatus, this._obtainedAt, this._Id]
+      };
    }
 };
 
@@ -182,6 +206,24 @@ const apiParams = {
                ret.path += '/' + this._sKey;
             }
             ret.path += '?' + qryStr.stringify(oQryStr);
+            ret.headers.Authorization = '' + module.exports.dplAuthToken;
+
+            return ret;
+         }
+      },
+      idr: {
+         getHttpAttr: function() {
+            const ret = {
+               host: 'plus.dnb.com',
+               path: '/v1/match/cleanseMatch',
+               method: 'GET',
+               headers: {
+                  'Content-Type': 'application/json',
+                  Origin: 'www.dnb.com'
+               }
+            };
+
+            ret.path += '?' + qryStr.stringify(this._params);
             ret.headers.Authorization = '' + module.exports.dplAuthToken;
 
             return ret;
@@ -327,6 +369,10 @@ const apiParams = {
    }
 };
 
+//Check object type
+function isAuthToken(obj) {return ('_token' in obj)}
+function isDnbDplIdr(obj) {return ('_rawRsltIdr' in obj)}
+
 //Check if the data product request is HTTP POST or GET
 function isHttpPost(apiPrms) {
    return 'getHttpPostBody' in apiPrms;
@@ -336,11 +382,16 @@ function isHttpPost(apiPrms) {
 function execHttpReqResp() {
    let httpAttr, httpPostBody = null, prms;
 
-   if('_token' in this) { //API call for authorization token
+   if(isAuthToken(this)) { //API call for authorization token
       prms = apiParams[this._api.id].authToken;
 
       httpAttr = prms.getHttpAttr();
       httpPostBody = prms.getHttpPostBody();
+   }
+   else if(isDnbDplIdr(this)) { //Direct+ IDentity Resolution API call
+      prms = apiParams[ahGlob.apis[ahGlob.idxApis.apiDpl].id].idr;
+
+      httpAttr = prms.getHttpAttr.call(this);
    }
    else { //Execute an HTTP data product request
       prms = apiParams[this._product.api.id].dataProduct;
@@ -363,7 +414,11 @@ function execHttpReqResp() {
          resp.on('end', () => { //The data product is now available in full
             //As a first step register when the response was available
             this._obtainedAt = Date.now();
-            this._productDB = false;
+
+            //In the case of an IDR call save the HTTP status code returned
+            if(isDnbDplIdr(this)) {
+               this._dplHttpStatus = resp.statusCode;
+            }
 
             // ... then process the raw XML/JSON response as returned by the API
             let respBody = body.join('');

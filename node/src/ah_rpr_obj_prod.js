@@ -260,6 +260,8 @@ class DataProduct extends ahGlobObj.EvntEmit {
             //is emitted, then the new product is stored on the database. When
             //storing new products old products are automatically archived.
             if(httpRespBody) {
+               this._productDB = false; //API Hub product retrieved from API
+
                processHttpResp.call(this, httpRespBody);
 
                console.log('About to emit onLoad for API ' + this._product.api.id + ', key ' + this._sKey + ' (obtained online)');

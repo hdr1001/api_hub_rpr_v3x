@@ -38,6 +38,7 @@
 -- ALTER TABLE public.archive_cmpcvf DROP CONSTRAINT archive_cmpcvf_pkey;
 -- ALTER TABLE public.archive_cmpbos DROP CONSTRAINT archive_cmpbos_pkey;
 -- ALTER TABLE public.archive_lei_ref DROP CONSTRAINT archive_lei_ref_pkey;
+-- ALTER TABLE public.match_dnb_idr DROP CONSTRAINT dnb_idr_pkey;
 -- DROP INDEX public.auth_tokens_api_id_desc_idx;
 -- DROP TABLE public.auth_tokens;
 -- DROP TABLE public.products_dnb;
@@ -47,14 +48,14 @@
 -- DROP TABLE public.archive_cmpcvf;
 -- DROP TABLE public.archive_cmpbos;
 -- DROP TABLE public.archive_lei_ref;
--- DROP TABLE public.id_res;
+-- DROP TABLE public.match_dnb_idr;
 -- DROP SEQUENCE public.auth_tokens_id_seq;
 -- DROP SEQUENCE public.archive_cmpelk_id_seq;
 -- DROP SEQUENCE public.archive_cmptcs_id_seq;
 -- DROP SEQUENCE public.archive_cmpcvf_id_seq;
 -- DROP SEQUENCE public.archive_cmpbos_id_seq;
 -- DROP SEQUENCE public.archive_lei_ref_id_seq;
--- DROP SEQUENCE public.id_res_id_seq;
+-- DROP SEQUENCE public.dnb_idr_id_seq;
 
 -- Create the sequence for the primary key of table auth_tokens
 CREATE SEQUENCE public.auth_tokens_id_seq
@@ -104,13 +105,13 @@ CREATE SEQUENCE public.archive_lei_ref_id_seq
     MAXVALUE 9223372036854775807
     CACHE 1;
 
--- Create the sequence for the primary key of table id_res
---CREATE SEQUENCE public.id_res_id_seq
---    INCREMENT 1
---    START 1
---    MINVALUE 1
---    MAXVALUE 9223372036854775807
---    CACHE 1;
+-- Create the sequence for the primary key of table match_dnb_idr
+CREATE SEQUENCE public.dnb_idr_id_seq
+    INCREMENT 1
+    START 1
+    MINVALUE 1
+    MAXVALUE 9223372036854775807
+    CACHE 1;
 
 -- Create table auth_tokens for storing Direct 2.0 Onboard tokens
 CREATE TABLE public.auth_tokens
@@ -234,20 +235,20 @@ WITH (
 TABLESPACE pg_default;
 
 -- Create table storing Direct+ identity resolution in & output
---CREATE TABLE public.id_res
---(
---    id integer NOT NULL DEFAULT nextval('id_res_id_seq'::regclass),
---    parameters JSONB,
---    result JSONB,
---    http_stat char(3),
---    obtained_at bigint,
---    duns character varying(11) COLLATE pg_catalog."default",
---    CONSTRAINT id_res_pkey PRIMARY KEY (id)
---)
---WITH (
---    OIDS = FALSE
---)
---TABLESPACE pg_default;
+CREATE TABLE public.match_dnb_idr
+(
+    id integer NOT NULL DEFAULT nextval('dnb_idr_id_seq'::regclass),
+    parameters JSONB,
+    result JSONB,
+    http_stat char(3),
+    obtained_at bigint,
+    duns character varying(11) COLLATE pg_catalog."default",
+    CONSTRAINT dnb_idr_pkey PRIMARY KEY (id)
+)
+WITH (
+    OIDS = FALSE
+)
+TABLESPACE pg_default;
 
 -- Create an index for reverse sorting on id in table auth_tokens
 CREATE UNIQUE INDEX auth_tokens_api_id_desc_idx
