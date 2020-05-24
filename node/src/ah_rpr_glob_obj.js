@@ -135,6 +135,17 @@ const sqlPrepStmts = {
          text: sSQL,
          values: [this._rawRsltIdr, this._dplHttpStatus, this._obtainedAt, this._Id]
       };
+   },
+
+   updDnbDplIdrDuns: function(arr) {
+      let sSQL = 'UPDATE match_dnb_idr SET duns = $2 WHERE id = $1;';
+      //console.log('SQL upd_DnbDplIdrDuns -> ' + sSQL);
+
+      return {
+         name: 'upd_DnbDplIdrDuns',
+         text: sSQL,
+         values: arr
+      };
    }
 };
 

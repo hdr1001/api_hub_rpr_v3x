@@ -150,24 +150,28 @@ class DnbDplIdr extends ahGlobObj.EvntEmit {
       throw new Error('IDR results not (yet) available');
    }
 }
-/*
+
 //Update the DUNS database column for a specific IDR ID
-function updIdrDunsToDB(idrID, DUNS) {
+function dplIdrDunsToDb(idrID, DUNS) {
    return new Promise((resolve, reject) => {
-      pgConnPool.connect((err, client, done) => {
+      ahGlobObj.pgConnPool.connect((err, client, done) => {
          if(err) {
             console.log('Error fetching client from pool');
             reject(err); return;
          }
 
-         client.query(sqlPrepStmts.updDplIdrDuns([DUNS, idrID]), (err, rslt) => {
+         client.query(ahGlobObj.sqlPrepStmts.updDnbDplIdrDuns([idrID, DUNS]), (err, rslt) => {
             done(err);
 
             if(err || rslt.rowCount != 1) {
-               console.log('Error running DUNS persist Direct+ IDR query');
+               let msgInfo = 'Error running DUNS persist Direct+ IDR query';
+               console.log(msgInfo);
                
                if(!err) {
-                  err = new Error('IDR DUNS persist error, rowCount = ' + rslt.rowCount);
+                  err = new ahErr.ApiHubErr(
+                     ahErr.idxErrMsgs.errPersisting,
+                     ahGlob.dataStruct[ahGlob.idxDataStruct.json],
+                     msgInfo);
                }
 
                reject(err); return;
@@ -178,9 +182,10 @@ function updIdrDunsToDB(idrID, DUNS) {
       });
    });
 }
-*/
 
 module.exports = Object.freeze({
    //DnbDplIdr object instantiantion exported as a function
-   getDnbDplIdr: params => new DnbDplIdr(params)
+   getDnbDplIdr: params => new DnbDplIdr(params),
+
+   doUpdDnbDplIdrDuns: dplIdrDunsToDb
 });

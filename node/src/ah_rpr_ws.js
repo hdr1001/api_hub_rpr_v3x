@@ -47,6 +47,9 @@ appExpress.use(bodyParser.json());
 const http_host = '0.0.0.0';
 const http_port = 8081;
 
+//JSON is the default data structure
+const structJSON = ahGlob.dataStruct[ahGlob.idxDataStruct.json];
+
 //Return JSON data in response to an HTTP request
 const doSend = (req, res, sStruct, sBody, err) => {
    let sContentType = 'application/' + sStruct.toLowerCase();
@@ -90,7 +93,7 @@ appExpress.get('/hub', (req, res) => {
 appExpress.get('/hub/:sProduct/:sKey', (req, res) => {
    //console.log('Product requested: ' + req.params.sProduct);
 
-   let oDataProd, sStruct = ahGlob.dataStruct[ahGlob.idxDataStruct.json]; //JSON is default
+   let oDataProd, sStruct = structJSON; //JSON is default
 
    //Return XML if applicable
    if(ahGlob.getDataStruct(req.params.sProduct) === ahGlob.dataStruct[ahGlob.idxDataStruct.xml]) {
@@ -116,60 +119,52 @@ appExpress.get('/hub/:sProduct/:sKey', (req, res) => {
 
 //Return a D&B Direct+ IDentity Resolution response (note post!)
 appExpress.post('/hub/idr', (req, res) => {
-   let oIdr, sStruct = ahGlob.dataStruct[ahGlob.idxDataStruct.json];
+   let oIdr;
 
    //Try to instantiate a D+ IDR object, errors might be thrown!
    try {
       oIdr = ahObjIdr.getDnbDplIdr(req.body);
    }
    catch(err) { //Error thrown
-      doSend(req, res, sStruct, null, err);
+      doSend(req, res, structJSON, null, err);
       return;
    }
-
-   //The Direct+ HTTP status code returned can be of interest
 
    oIdr.on('onLoad', () => { //Match candidates available
       res.setHeader('X-DNB-DPL-IDR-ID', oIdr.Id);
       res.setHeader('X-DNB-DPL-HTTP-Stat', oIdr.dplHttpStatus);
-      doSend(req, res, sStruct, oIdr.rsltJSON);
+      doSend(req, res, structJSON, oIdr.rsltJSON);
    });
 
    oIdr.on('onError', err => {
       res.setHeader('X-DNB-DPL-HTTP-Stat', oIdr.dplHttpStatus);
-      doSend(req, res, sStruct, null, err);
+      doSend(req, res, structJSON, null, err);
    });
 });
-/*
+
 //Associate a specific DUNS with a Direct+ IDR transaction
 appExpress.post('/hub/idr/:idrID', (req, res) => {
-   const updIdrDuns = api.doUpdIdrDuns(req.params.idrID, req.body.DUNS);
-
-   res.setHeader('Content-Type', 'application/json');
-
-   updIdrDuns
+   ahObjIdr.doUpdDnbDplIdrDuns(req.params.idrID, req.body.DUNS)
       .then(rowCount => {
          console.log('Successfully updated DUNS for IDR ' + req.params.idrID);
-         res.send('{\"rowCount\": ' + rowCount + '}');
+         doSend(req, res, structJSON, '{\"rowCount\": ' + rowCount + '}');
       })
       .catch(err => {
          console.log('Error occured updating DUNS for IDR ' + req.params.idrID);
-         res.status(404).send('{\"err_msg\": \"' + err.message + '\"}');
+         doSend(req, res, structJSON, null, err);
       });
 });
-*/
+
 //Backstop for requests for nonexistent resources
 appExpress.use((req, res, next) => {
-   let sStruct = ahGlob.dataStruct[ahGlob.idxDataStruct.json];
-
    let msgInfo = 'The requested resource (' + req.path + ') can not be located';
    console.log(msgInfo);
 
    let err = new ahErr.ApiHubErr( ahErr.idxErrMsgs.unableToLocate,
-                                  ahGlob.dataStruct[ahGlob.idxDataStruct.json],
+                                  structJSON,
                                   msgInfo);
 
-   doSend(req, res, sStruct, null, err);
+   doSend(req, res, structJSON, null, err);
 });
 
 //Instantiate the HTTP server object

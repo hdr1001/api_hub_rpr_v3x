@@ -37,7 +37,8 @@ const ahErrMsgs = [
    {shrtDesc: 'Error occurred in API HUB', httpStatus: httpStatusCodes.genericErr},
    {shrtDesc: 'Error instantiating DataProduct object', httpStatus: httpStatusCodes.badRequest},
    {shrtDesc: 'Ext API returned an invalid HTTP status', httpStatus: httpStatusCodes.genericErr},
-   {shrtDesc: 'Unable to locate the requested resource', httpStatus: httpStatusCodes.notFound}
+   {shrtDesc: 'Unable to locate the requested resource', httpStatus: httpStatusCodes.notFound},
+   {shrtDesc: 'Error persisting object', httpStatus: httpStatusCodes.genericErr}
 ];
 
 //Error type codes
@@ -45,7 +46,8 @@ const idxErrMsgs = {
    generic: 0,
    instDataProduct: 1,
    httpStatusExtApi: 2,
-   unableToLocate: 3
+   unableToLocate: 3,
+   errPersisting: 4
 };
 
 //API hub error constructor function
