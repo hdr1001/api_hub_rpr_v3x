@@ -43,6 +43,10 @@ const bodyParser = require('body-parser');
 appExpress.use(bodyParser.urlencoded({extended: true}));
 appExpress.use(bodyParser.json()); 
 
+//Allow Cross-Origin Resource Sharing (https://bit.ly/2MHOCHG)
+const cors = require('cors');
+appExpress.use(cors());
+
 //HTTP host server and port
 const http_host = '0.0.0.0';
 const http_port = 8081;

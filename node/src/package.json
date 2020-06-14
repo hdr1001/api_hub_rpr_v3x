@@ -28,6 +28,7 @@
   },
   "homepage": "https://github.com/hdr1001/api_hub_rpr_v3x#readme",
   "dependencies": {
+    "cors": "^2.8.5",
     "express": "^4.17.1",
     "pg": "^8.0.3",
     "xmldom": "^0.3.0"
