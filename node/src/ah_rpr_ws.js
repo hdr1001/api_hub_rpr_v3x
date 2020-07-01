@@ -45,7 +45,9 @@ appExpress.use(bodyParser.json());
 
 //Allow Cross-Origin Resource Sharing (https://bit.ly/2MHOCHG)
 const cors = require('cors');
-appExpress.use(cors());
+appExpress.use(cors({
+   exposedHeaders: ['Content-Length', 'X-DNB-DPL-IDR-ID', 'X-DNB-DPL-HTTP-Stat'],
+}));
 
 //HTTP host server and port
 const http_host = '0.0.0.0';
