@@ -360,19 +360,13 @@ const apiParams = {
       dataProduct: {
          getHttpAttr: function() {
             const ret = {
-               host: 'leilookup.gleif.org',
-               path: '/api/' + this._versionID + '/leirecords',
+               host: 'api.gleif.org',
+               path: '/api/' + this._versionID + '/lei-records/' + this._sKey,
                method: 'GET',
                headers: {
                   'Content-Type': 'application/json'
                }
             };
-
-            const oQryStr = {
-               lei: this._sKey
-            };
-
-            ret.path += '?' + qryStr.stringify(oQryStr);
 
             return ret;
          }

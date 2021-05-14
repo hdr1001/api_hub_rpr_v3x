@@ -120,7 +120,7 @@ const products = [
       api: apis[idxApis.apiLei],
       provider: providers[idxProviders.gleif],
       key: keys[idxKeys.lei],
-      versions: ['v2']
+      versions: ['v1']
    }
 ];
 
